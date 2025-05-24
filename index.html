@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>«Нефтяной Магнат: От скважины до рынка» - Раунд 5</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-image: url('image.png');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 20px auto;
+            border: 2px solid #2980b9;
+        }
+        .location {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px auto;
+            max-width: 700px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            border: 2px solid #3498db;
+        }
+        .location:hover {
+            background-color: rgba(255, 255, 255, 0.95);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .screen {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px auto;
+            max-width: 700px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 2px solid #2980b9;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .next-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto 0;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .next-button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        #result-content {
+            background-color: rgba(240, 240, 240, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+        }
+        .positive {
+            color: #27ae60;
+        }
+        .negative {
+            color: #e74c3c;
+        }
+        .dice-roll {
+            font-weight: bold;
+            color: #2c3e50;
+            background-color: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .dice-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .dice {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 60px;
+            text-align: center;
+            animation: roll 1s ease-out;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.2); }
+            50% { transform: rotate(180deg) scale(1); }
+            75% { transform: rotate(270deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .dice-result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="main-screen" class="screen">
+        <h1>Раунд 5: Продажа нефтепродуктов</h1>
+        <div id="locations-container"></div>
+    </div>
+
+    <div id="sale-screen" class="screen">
+        <h1 id="location-title"></h1>
+        <div class="form-group">
+            <label for="oil-volume">Общий объём добытой нефти (млн баррелей):</label>
+            <input type="number" id="oil-volume" min="0" step="0.1" value="1.0">
+        </div>
+        <div class="form-group">
+            <label for="petrol-percent">Процент переработанный в бензин (базовая цена 70 мгр/баррель):</label>
+            <input type="number" id="petrol-percent" min="0" max="100" step="1" value="50">
+        </div>
+        <div class="form-group">
+            <label for="petrol-price-mod">Поправка к цене бензина (%):</label>
+            <input type="number" id="petrol-price-mod" min="-100" max="100" step="1" value="0">
+        </div>
+        <div class="form-group">
+            <label for="diesel-percent">Процент переработанный в дизель (базовая цена 85 мгр/баррель):</label>
+            <input type="number" id="diesel-percent" min="0" max="100" step="1" value="30">
+        </div>
+        <div class="form-group">
+            <label for="diesel-price-mod">Поправка к цене дизеля (%):</label>
+            <input type="number" id="diesel-price-mod" min="-100" max="100" step="1" value="0">
+        </div>
+        <div class="form-group">
+            <label for="eco-points">Количество эко-баллов:</label>
+            <input type="number" id="eco-points" min="-100" max="100" step="1" value="0">
+        </div>
+        <button class="next-button" onclick="calculateProfit()">Рассчитать прибыль</button>
+    </div>
+
+    <div id="bad-eco-screen" class="screen">
+        <h1>Экологи бьют тревогу!</h1>
+        <p>Вашу нефть называют 'грязной'. Выберите стратегию продажи:</p>
+        <div class="form-group">
+            <label>
+                <input type="radio" name="bad-eco-option" value="1" checked>
+                Снизить цену на 20% — быстрая продажа, но с убытком
+            </label>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="radio" name="bad-eco-option" value="2">
+                Инвестировать в экокомпенсацию (50 тыс мгр) — цена не падает, но прибыль уменьшается
+            </label>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="radio" name="bad-eco-option" value="3">
+                Найти стратегического партнёра (результат определит кубик)
+            </label>
+        </div>
+        <button class="next-button" onclick="applyBadEcoStrategy()">Применить стратегию</button>
+    </div>
+
+    <div id="good-eco-screen" class="screen">
+        <h1>Ваша нефть востребована!</h1>
+        <p>Как увеличить прибыль? Выберите стратегию:</p>
+        <div class="form-group">
+            <label>
+                <input type="radio" name="good-eco-option" value="1" checked>
+                Продать 20% объёма по двойной цене
+            </label>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="radio" name="good-eco-option" value="2">
+                Получить господдержку (70 тыс мгр за "зелёные" технологии)
+            </label>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="radio" name="good-eco-option" value="3">
+                Создать альянс (результат определит кубик)
+            </label>
+        </div>
+        <button class="next-button" onclick="applyGoodEcoStrategy()">Применить стратегию</button>
+    </div>
+
+    <div id="dice-screen" class="screen">
+        <h1>Бросок кубика</h1>
+        <div class="dice-container">
+            <div id="dice" class="dice">?</div>
+            <div id="dice-result" class="dice-result"></div>
+        </div>
+        <button id="continue-btn" class="next-button hidden">Продолжить</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1 style="color: #3498db;">Результаты продажи</h1>
+        <div id="result-content"></div>
+        <button class="next-button" onclick="showMainScreen()">Начать заново</button>
+    </div>
+
+    <script>
+        const locations = {
+            prirazlomnoye: { name: "Приразломное месторождение" },
+            vankorskoye: { name: "Ванкорское месторождение" },
+            samotlorskoye: { name: "Самотлорское месторождение" },
+            romashkinskoye: { name: "Ромашкинское месторождение" },
+            shtokmanovskoye: { name: "Штокмановское месторождение" },
+            urengoy: { name: "Уренгойское месторождение" },
+            tuymazinskoye: { name: "Туймазинское месторождение" }
+        };
+
+        let currentLocation = null;
+        let profitData = {
+            oilVolume: 0,
+            petrolVolume: 0,
+            petrolPrice: 70,
+            petrolPriceMod: 0,
+            dieselVolume: 0,
+            dieselPrice: 85,
+            dieselPriceMod: 0,
+            ecoPoints: 0,
+            baseProfit: 0,
+            finalProfit: 0,
+            diceRoll: 0,
+            currentStrategy: null // 'bad' или 'good'
+        };
+
+        window.onload = function() {
+            showMainScreen();
+            document.getElementById('continue-btn').addEventListener('click', processDiceResult);
+        };
+
+        function showMainScreen() {
+            document.getElementById('main-screen').style.display = 'block';
+            document.getElementById('sale-screen').style.display = 'none';
+            document.getElementById('bad-eco-screen').style.display = 'none';
+            document.getElementById('good-eco-screen').style.display = 'none';
+            document.getElementById('dice-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'none';
+
+            const container = document.getElementById('locations-container');
+            container.innerHTML = '';
+
+            for (const [key, loc] of Object.entries(locations)) {
+                const div = document.createElement('div');
+                div.className = 'location';
+                div.textContent = loc.name;
+                div.onclick = function() { selectLocation(key); };
+                container.appendChild(div);
+            }
+        }
+
+        function selectLocation(locKey) {
+            currentLocation = locations[locKey];
+            document.getElementById('main-screen').style.display = 'none';
+            document.getElementById('sale-screen').style.display = 'block';
+            document.getElementById('location-title').textContent = currentLocation.name;
+        }
+
+        function calculateProfit() {
+            const oilVolumeMln = parseFloat(document.getElementById('oil-volume').value) || 0;
+            profitData.oilVolume = oilVolumeMln * 1000000;
+            
+            const petrolPercent = parseInt(document.getElementById('petrol-percent').value) || 0;
+            profitData.petrolPriceMod = parseInt(document.getElementById('petrol-price-mod').value) || 0;
+            const dieselPercent = parseInt(document.getElementById('diesel-percent').value) || 0;
+            profitData.dieselPriceMod = parseInt(document.getElementById('diesel-price-mod').value) || 0;
+            profitData.ecoPoints = parseInt(document.getElementById('eco-points').value) || 0;
+
+            profitData.petrolVolume = profitData.oilVolume * petrolPercent / 100;
+            profitData.dieselVolume = profitData.oilVolume * dieselPercent / 100;
+
+            const petrolPriceWithEco = profitData.petrolPrice + profitData.ecoPoints;
+            const dieselPriceWithEco = profitData.dieselPrice + profitData.ecoPoints;
+
+            const finalPetrolPrice = petrolPriceWithEco * (1 + profitData.petrolPriceMod / 100);
+            const finalDieselPrice = dieselPriceWithEco * (1 + profitData.dieselPriceMod / 100);
+
+            profitData.baseProfit = profitData.petrolVolume * finalPetrolPrice + profitData.dieselVolume * finalDieselPrice;
+
+            if (profitData.ecoPoints < 0) {
+                document.getElementById('sale-screen').style.display = 'none';
+                document.getElementById('bad-eco-screen').style.display = 'block';
+            } else if (profitData.ecoPoints >= 5) {
+                document.getElementById('sale-screen').style.display = 'none';
+                document.getElementById('good-eco-screen').style.display = 'block';
+            } else {
+                profitData.finalProfit = profitData.baseProfit;
+                showResult();
+            }
+        }
+
+        function applyBadEcoStrategy() {
+            const selectedOption = document.querySelector('input[name="bad-eco-option"]:checked').value;
+            
+            if (selectedOption === "3") {
+                profitData.currentStrategy = 'bad';
+                rollDice();
+            } else {
+                if (selectedOption === "1") {
+                    profitData.finalProfit = profitData.baseProfit * 0.8;
+                } else if (selectedOption === "2") {
+                    profitData.finalProfit = profitData.baseProfit - 50000;
+                }
+                showResult();
+            }
+        }
+
+        function applyGoodEcoStrategy() {
+            const selectedOption = document.querySelector('input[name="good-eco-option"]:checked').value;
+            
+            if (selectedOption === "3") {
+                profitData.currentStrategy = 'good';
+                rollDice();
+            } else {
+                if (selectedOption === "1") {
+                    const premiumVolume = (profitData.petrolVolume + profitData.dieselVolume) * 0.2;
+                    const regularVolume = (profitData.petrolVolume + profitData.dieselVolume) * 0.8;
+                    const avgPrice = (profitData.petrolPrice + profitData.dieselPrice) / 2;
+                    profitData.finalProfit = regularVolume * avgPrice + premiumVolume * avgPrice * 2;
+                } else if (selectedOption === "2") {
+                    profitData.finalProfit = profitData.baseProfit + 70000;
+                }
+                showResult();
+            }
+        }
+
+        function rollDice() {
+            document.getElementById('bad-eco-screen').style.display = 'none';
+            document.getElementById('good-eco-screen').style.display = 'none';
+            document.getElementById('dice-screen').style.display = 'block';
+            
+            const dice = document.getElementById('dice');
+            dice.textContent = '?';
+            document.getElementById('dice-result').textContent = '';
+            document.getElementById('continue-btn').classList.add('hidden');
+            
+            // Анимация броска кубика
+            let rolls = 0;
+            const maxRolls = 10;
+            const rollInterval = setInterval(() => {
+                profitData.diceRoll = Math.floor(Math.random() * 6) + 1;
+                dice.textContent = profitData.diceRoll;
+                rolls++;
+                
+                if (rolls >= maxRolls) {
+                    clearInterval(rollInterval);
+                    document.getElementById('continue-btn').classList.remove('hidden');
+                    
+                    // Показываем результат броска
+                    if (profitData.currentStrategy === 'bad') {
+                        document.getElementById('dice-result').textContent = 
+                            profitData.diceRoll <= 3 ? 
+                            '1-3: Партнёр требует долю → -30% прибыли' : 
+                            '4-6: Удачное сотрудничество → +20 тыс мгр';
+                    } else {
+                        document.getElementById('dice-result').textContent = 
+                            profitData.diceRoll <= 3 ? 
+                            '1-3: Партнёр забирает 15% прибыли' : 
+                            '4-6: Удачный альянс → +50 тыс мгр';
+                    }
+                }
+            }, 150);
+        }
+
+        function processDiceResult() {
+            if (profitData.currentStrategy === 'bad') {
+                if (profitData.diceRoll <= 3) {
+                    profitData.finalProfit = profitData.baseProfit * 0.7;
+                } else {
+                    profitData.finalProfit = profitData.baseProfit + 20000;
+                }
+            } else {
+                if (profitData.diceRoll <= 3) {
+                    const newPrice = 67;
+                    profitData.finalProfit = (profitData.petrolVolume + profitData.dieselVolume) * newPrice * 0.85;
+                } else {
+                    profitData.finalProfit = profitData.baseProfit + 50000;
+                }
+            }
+            
+            document.getElementById('dice-screen').style.display = 'none';
+            showResult();
+        }
+
+        function showResult() {
+            const finalPetrolPrice = (profitData.petrolPrice + profitData.ecoPoints) * (1 + profitData.petrolPriceMod / 100);
+            const finalDieselPrice = (profitData.dieselPrice + profitData.ecoPoints) * (1 + profitData.dieselPriceMod / 100);
+
+            let resultHTML = `
+                <div class="result-item">
+                    <h3>${currentLocation.name}</h3>
+                    <p><strong>Общий объём нефти:</strong> ${(profitData.oilVolume / 1000000).toFixed(2)} млн баррелей</p>
+                    <p><strong>Бензин:</strong> ${(profitData.petrolVolume / 1000000).toFixed(2)} млн баррелей × ${finalPetrolPrice.toFixed(2)} мгр/баррель</p>
+                    <p><strong>Дизель:</strong> ${(profitData.dieselVolume / 1000000).toFixed(2)} млн баррелей × ${finalDieselPrice.toFixed(2)} мгр/баррель</p>
+                    <p><strong>Эко-баллы:</strong> <span class="${profitData.ecoPoints > 0 ? 'positive' : profitData.ecoPoints < 0 ? 'negative' : ''}">${profitData.ecoPoints}</span></p>
+                    <p><strong>Базовая прибыль:</strong> ${Math.round(profitData.baseProfit).toLocaleString()} мгр</p>
+            `;
+
+            if (profitData.diceRoll > 0) {
+                resultHTML += `
+                    <p><strong>Бросок кубика:</strong> <span class="dice-roll">${profitData.diceRoll}</span> 
+                    (${profitData.currentStrategy === 'bad' ? 
+                        profitData.diceRoll <= 3 ? '1-3: Партнёр требует долю → -30% прибыли' : '4-6: Удачное сотрудничество → +20 тыс мгр' :
+                        profitData.diceRoll <= 3 ? '1-3: Партнёр забирает 15% прибыли' : '4-6: Удачный альянс → +50 тыс мгр'})
+                    </p>
+                `;
+            }
+
+            resultHTML += `
+                    <p><strong>Итоговая прибыль:</strong> <span style="font-size: 1.2em; font-weight: bold;">${Math.round(profitData.finalProfit).toLocaleString()} мгр</span></p>
+                </div>
+            `;
+
+            document.getElementById('result-content').innerHTML = resultHTML;
+            document.getElementById('result-screen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
