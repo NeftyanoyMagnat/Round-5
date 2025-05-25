@@ -156,16 +156,12 @@
             <input type="number" id="petrol-percent" min="0" max="100" step="1" value="50">
         </div>
         <div class="form-group">
-            <label for="petrol-price-mod">Поправка к цене бензина (%):</label>
-            <input type="number" id="petrol-price-mod" min="-100" max="100" step="1" value="0">
-        </div>
-        <div class="form-group">
             <label for="diesel-percent">Процент переработанный в дизель (базовая цена 85 мгр/баррель):</label>
             <input type="number" id="diesel-percent" min="0" max="100" step="1" value="30">
         </div>
         <div class="form-group">
-            <label for="diesel-price-mod">Поправка к цене дизеля (%):</label>
-            <input type="number" id="diesel-price-mod" min="-100" max="100" step="1" value="0">
+            <label for="price-mod">Поправка к цене нефтепродуктов (%):</label>
+            <input type="number" id="price-mod" min="-100" max="100" step="1" value="0">
         </div>
         <div class="form-group">
             <label for="eco-points">Количество эко-баллов:</label>
@@ -253,10 +249,9 @@
             oilVolume: 0,
             petrolVolume: 0,
             petrolPrice: 70,
-            petrolPriceMod: 0,
             dieselVolume: 0,
             dieselPrice: 85,
-            dieselPriceMod: 0,
+            priceMod: 0,
             ecoPoints: 0,
             baseProfit: 0,
             finalProfit: 0,
@@ -301,9 +296,8 @@
             profitData.oilVolume = oilVolumeMln * 1000000;
             
             const petrolPercent = parseInt(document.getElementById('petrol-percent').value) || 0;
-            profitData.petrolPriceMod = parseInt(document.getElementById('petrol-price-mod').value) || 0;
             const dieselPercent = parseInt(document.getElementById('diesel-percent').value) || 0;
-            profitData.dieselPriceMod = parseInt(document.getElementById('diesel-price-mod').value) || 0;
+            profitData.priceMod = parseInt(document.getElementById('price-mod').value) || 0;
             profitData.ecoPoints = parseInt(document.getElementById('eco-points').value) || 0;
 
             profitData.petrolVolume = profitData.oilVolume * petrolPercent / 100;
@@ -312,8 +306,8 @@
             const petrolPriceWithEco = profitData.petrolPrice + profitData.ecoPoints;
             const dieselPriceWithEco = profitData.dieselPrice + profitData.ecoPoints;
 
-            const finalPetrolPrice = petrolPriceWithEco * (1 + profitData.petrolPriceMod / 100);
-            const finalDieselPrice = dieselPriceWithEco * (1 + profitData.dieselPriceMod / 100);
+            const finalPetrolPrice = petrolPriceWithEco * (1 + profitData.priceMod / 100);
+            const finalDieselPrice = dieselPriceWithEco * (1 + profitData.priceMod / 100);
 
             profitData.baseProfit = profitData.petrolVolume * finalPetrolPrice + profitData.dieselVolume * finalDieselPrice;
 
@@ -423,8 +417,8 @@
         }
 
         function showResult() {
-            const finalPetrolPrice = (profitData.petrolPrice + profitData.ecoPoints) * (1 + profitData.petrolPriceMod / 100);
-            const finalDieselPrice = (profitData.dieselPrice + profitData.ecoPoints) * (1 + profitData.dieselPriceMod / 100);
+            const finalPetrolPrice = (profitData.petrolPrice + profitData.ecoPoints) * (1 + profitData.priceMod / 100);
+            const finalDieselPrice = (profitData.dieselPrice + profitData.ecoPoints) * (1 + profitData.priceMod / 100);
 
             let resultHTML = `
                 <div class="result-item">
@@ -432,6 +426,7 @@
                     <p><strong>Общий объём нефти:</strong> ${(profitData.oilVolume / 1000000).toFixed(2)} млн баррелей</p>
                     <p><strong>Бензин:</strong> ${(profitData.petrolVolume / 1000000).toFixed(2)} млн баррелей × ${finalPetrolPrice.toFixed(2)} мгр/баррель</p>
                     <p><strong>Дизель:</strong> ${(profitData.dieselVolume / 1000000).toFixed(2)} млн баррелей × ${finalDieselPrice.toFixed(2)} мгр/баррель</p>
+                    <p><strong>Поправка к цене:</strong> ${profitData.priceMod > 0 ? '+' : ''}${profitData.priceMod}%</p>
                     <p><strong>Эко-баллы:</strong> <span class="${profitData.ecoPoints > 0 ? 'positive' : profitData.ecoPoints < 0 ? 'negative' : ''}">${profitData.ecoPoints}</span></p>
                     <p><strong>Базовая прибыль:</strong> ${Math.round(profitData.baseProfit).toLocaleString()} мгр</p>
             `;
